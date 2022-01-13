@@ -292,8 +292,6 @@ class SimSlurmRunner():
         
         self.job = sbatch(self.command,
                             chdir=self.directory,
-                            e='%j.log',
-                            o='%j.log',
                             **kwargs
                             )
         try:

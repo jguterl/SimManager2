@@ -1,2 +1,0 @@
-SimManager2
-slurm_support

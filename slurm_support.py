@@ -57,11 +57,15 @@ class sbatch_utils(dict):
                      'shell':'#!/bin/bash',
                      'pyslurm':False
                     }
-    
+        if kwargs.get('extra') is not None:
+            extra = kwargs.pop('extra')
+        else:
+            extra={}
         KwDefaults.update( dict((k,kwargs.pop(k)) for k in KwDefaults.keys() if k in list(kwargs.keys()) ))
         self.update(KwDefaults)
         self.slurm_kwargs = {}
         self.slurm_kwargs.update(kwargs)
+        self.slurm_kwargs.update(extra)
         if self.pyslurm:
             try:
                 import pyslurm
@@ -139,7 +143,7 @@ class SlurmSbatch(sbatch_utils):
         self.make_commands()
         
     def sbatch(self):
-        self.write_job_file(self.get_template())
+        self.write_job_file()
         self.submit_job()
         
     def submit_job(self):
@@ -147,7 +151,7 @@ class SlurmSbatch(sbatch_utils):
         if self.pyslurm:
             if self.verbose: print ('Submitting with pyslurm sbatch file: {}'.format(self.filename))
             self.job_id = pyslurm.job().submit_batch_job({"script": self.filename})
-            print('pyslurm:',self.job_id)
+            print('job submitted to slurm with id:',self.job_id)
             
         else:
             if self.verbose: print ('Submitting with process sbatch file: {}'.format(self.filename))
@@ -159,7 +163,7 @@ class SlurmSbatch(sbatch_utils):
             print(self.job_id)
             
         
-    def write_job_file(self,template):
+    def write_job_file(self):
         if self.script_name is None:
             jobname = self.slurm_kwargs.get('J') if self.slurm_kwargs.get('J') is not None else 'job'
             self.filename =  jobname + str(time.strftime("_%Y%m%d_%H%M%S")) +'.sbatch'
